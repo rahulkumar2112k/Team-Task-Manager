@@ -87,22 +87,30 @@ It enables:
 
 ## 🖼️ Web Application Overview
 ### Landing Page
-![Landing](./screenshots/landing.png)
+![Landing](./landingPage.png)
 
 ### Login Page
-![Login](./screenshots/login.png)
+![Login](./loginPage.png)
 
 ### Admin Dashboard
-![Admin](./screenshots/admin-dashboard.png)
+![Admin](./adminDashboard.png)
 
-### Projects Page
-![Projects](./screenshots/projects.png)
+### Admin Project View
+![Admin](./adminProject.png)
+![Admin](./adminProject2.png)
 
-### Tasks Board
-![Tasks](./screenshots/tasks.png)
+### Admin Task Board
+![Projects](./adminTask.png)
 
 ### Member Dashboard
-![Member](./screenshots/member-dashboard.png)
+![Member](./memberDashboard.png)
+
+### Member Project View
+![Member](./memberProject.png)
+
+### Member Task Board
+![Member](./memberTask.png)
+
 
 ---
 
@@ -146,7 +154,7 @@ VITE_API_URL=https://your-backend-url.onrender.com/api
 
 ### Clone Repo
 ```
-git clone https://github.com/yourusername/team-task-manager.git
+git clone https://github.com/rahulkumar2112k/Team-Task-Manager.git
 cd team-task-manager
 ```
 
