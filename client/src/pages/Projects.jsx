@@ -8,19 +8,30 @@ import { getStoredUser } from "../utils/auth";
 export default function Projects() {
   const user = getStoredUser();
   const isAdmin = user?.role === "admin";
+
+  // MOBILE SIDEBAR STATE
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
+
   const [form, setForm] = useState({
     name: "",
     description: "",
     durationDays: "10",
   });
-  const [memberForm, setMemberForm] = useState({ projectId: "", userId: "" });
+
+  const [memberForm, setMemberForm] = useState({
+    projectId: "",
+    userId: "",
+  });
+
   const [progressForm, setProgressForm] = useState({
     projectId: "",
     percent: "0",
     note: "",
   });
+
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -28,7 +39,9 @@ export default function Projects() {
 
     Promise.all([
       API.get("/projects"),
-      isAdmin ? API.get("/auth/users") : Promise.resolve({ data: [] }),
+      isAdmin
+        ? API.get("/auth/users")
+        : Promise.resolve({ data: [] }),
     ])
       .then(([projectRes, userRes]) => {
         if (isMounted) {
@@ -37,7 +50,10 @@ export default function Projects() {
         }
       })
       .catch((err) => {
-        setError(err.response?.data?.message || "Could not load projects");
+        setError(
+          err.response?.data?.message ||
+            "Could not load projects"
+        );
       });
 
     return () => {
@@ -54,14 +70,30 @@ export default function Projects() {
 
   const createProject = async (event) => {
     event.preventDefault();
+
     setError("");
 
     try {
-      const res = await API.post("/projects", form);
-      setProjects((prev) => [res.data.project, ...prev]);
-      setForm({ name: "", description: "", durationDays: "10" });
+      const res = await API.post(
+        "/projects",
+        form
+      );
+
+      setProjects((prev) => [
+        res.data.project,
+        ...prev,
+      ]);
+
+      setForm({
+        name: "",
+        description: "",
+        durationDays: "10",
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "Could not create project");
+      setError(
+        err.response?.data?.message ||
+          "Could not create project"
+      );
     }
   };
 
@@ -74,18 +106,32 @@ export default function Projects() {
 
   const addMember = async (event) => {
     event.preventDefault();
+
     setError("");
 
     try {
-      const res = await API.post("/projects/add-member", memberForm);
+      const res = await API.post(
+        "/projects/add-member",
+        memberForm
+      );
+
       setProjects((prev) =>
         prev.map((project) =>
-          project._id === res.data.project._id ? res.data.project : project
+          project._id === res.data.project._id
+            ? res.data.project
+            : project
         )
       );
-      setMemberForm({ projectId: "", userId: "" });
+
+      setMemberForm({
+        projectId: "",
+        userId: "",
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "Could not add member");
+      setError(
+        err.response?.data?.message ||
+          "Could not add member"
+      );
     }
   };
 
@@ -94,12 +140,24 @@ export default function Projects() {
 
     try {
       await API.delete(`/projects/${projectId}`);
-      setProjects((prev) => prev.filter((project) => project._id !== projectId));
+
+      setProjects((prev) =>
+        prev.filter(
+          (project) =>
+            project._id !== projectId
+        )
+      );
+
       setMemberForm((prev) =>
-        prev.projectId === projectId ? { ...prev, projectId: "" } : prev
+        prev.projectId === projectId
+          ? { ...prev, projectId: "" }
+          : prev
       );
     } catch (err) {
-      setError(err.response?.data?.message || "Could not delete project");
+      setError(
+        err.response?.data?.message ||
+          "Could not delete project"
+      );
     }
   };
 
@@ -110,8 +168,11 @@ export default function Projects() {
     }));
   };
 
-  const updateProjectProgress = async (event) => {
+  const updateProjectProgress = async (
+    event
+  ) => {
     event.preventDefault();
+
     setError("");
 
     try {
@@ -122,37 +183,70 @@ export default function Projects() {
           note: progressForm.note,
         }
       );
+
       setProjects((prev) =>
         prev.map((project) =>
-          project._id === res.data.project._id ? res.data.project : project
+          project._id === res.data.project._id
+            ? res.data.project
+            : project
         )
       );
-      setProgressForm({ projectId: "", percent: "0", note: "" });
+
+      setProgressForm({
+        projectId: "",
+        percent: "0",
+        note: "",
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "Could not update progress");
+      setError(
+        err.response?.data?.message ||
+          "Could not update progress"
+      );
     }
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-950">
-      <Sidebar />
+      {/* SIDEBAR */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        setIsOpen={setSidebarOpen}
+      />
 
+      {/* MAIN CONTENT */}
       <div className="flex-1 min-w-0 h-screen overflow-y-auto">
-        <Navbar title={isAdmin ? "Admin Projects" : "Member Projects"} />
+        {/* NAVBAR */}
+        <Navbar
+          title={
+            isAdmin
+              ? "Admin Projects"
+              : "Member Projects"
+          }
+          onMenuClick={() =>
+            setSidebarOpen(true)
+          }
+        />
 
-        <main className="p-6">
+        {/* PAGE CONTENT */}
+        <main className="px-4 py-6 md:p-6">
           <h1 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
             Projects
           </h1>
+
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
             {isAdmin
               ? "Create projects and review the teams attached to them."
               : "View the projects where you are listed as a member."}
           </p>
 
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm mb-4">
+              {error}
+            </p>
+          )}
 
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+            {/* PROJECTS */}
             <section className="flex-1 min-w-0">
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {projects.map((project) => (
@@ -166,8 +260,10 @@ export default function Projects() {
               </div>
             </section>
 
+            {/* ADMIN PANEL */}
             {isAdmin && (
               <aside className="w-full lg:w-80 space-y-4">
+                {/* CREATE PROJECT */}
                 <form
                   onSubmit={createProject}
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm"
@@ -210,6 +306,7 @@ export default function Projects() {
                   </button>
                 </form>
 
+                {/* ADD MEMBER */}
                 <form
                   onSubmit={addMember}
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm"
@@ -224,9 +321,15 @@ export default function Projects() {
                     className="w-full p-3 mb-3 rounded border dark:bg-gray-800 dark:text-white"
                     onChange={updateMemberField}
                   >
-                    <option value="">Select project</option>
+                    <option value="">
+                      Select project
+                    </option>
+
                     {projects.map((project) => (
-                      <option key={project._id} value={project._id}>
+                      <option
+                        key={project._id}
+                        value={project._id}
+                      >
                         {project.name}
                       </option>
                     ))}
@@ -238,10 +341,17 @@ export default function Projects() {
                     className="w-full p-3 mb-4 rounded border dark:bg-gray-800 dark:text-white"
                     onChange={updateMemberField}
                   >
-                    <option value="">Select user</option>
+                    <option value="">
+                      Select user
+                    </option>
+
                     {users.map((member) => (
-                      <option key={member._id} value={member._id}>
-                        {member.name} ({member.role})
+                      <option
+                        key={member._id}
+                        value={member._id}
+                      >
+                        {member.name} (
+                        {member.role})
                       </option>
                     ))}
                   </select>
@@ -256,10 +366,13 @@ export default function Projects() {
               </aside>
             )}
 
+            {/* MEMBER PANEL */}
             {!isAdmin && (
               <aside className="w-full lg:w-80">
                 <form
-                  onSubmit={updateProjectProgress}
+                  onSubmit={
+                    updateProjectProgress
+                  }
                   className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm"
                 >
                   <h2 className="font-semibold mb-4 text-gray-900 dark:text-white">
@@ -270,11 +383,19 @@ export default function Projects() {
                     name="projectId"
                     value={progressForm.projectId}
                     className="w-full p-3 mb-3 rounded border dark:bg-gray-800 dark:text-white"
-                    onChange={updateProgressField}
+                    onChange={
+                      updateProgressField
+                    }
                   >
-                    <option value="">Select project</option>
+                    <option value="">
+                      Select project
+                    </option>
+
                     {projects.map((project) => (
-                      <option key={project._id} value={project._id}>
+                      <option
+                        key={project._id}
+                        value={project._id}
+                      >
                         {project.name}
                       </option>
                     ))}
@@ -288,7 +409,9 @@ export default function Projects() {
                     value={progressForm.percent}
                     placeholder="Progress percent"
                     className="w-full p-3 mb-3 rounded border dark:bg-gray-800 dark:text-white"
-                    onChange={updateProgressField}
+                    onChange={
+                      updateProgressField
+                    }
                   />
 
                   <textarea
@@ -296,7 +419,9 @@ export default function Projects() {
                     value={progressForm.note}
                     placeholder="What did you complete?"
                     className="w-full p-3 mb-4 rounded border min-h-24 dark:bg-gray-800 dark:text-white"
-                    onChange={updateProgressField}
+                    onChange={
+                      updateProgressField
+                    }
                   />
 
                   <button
